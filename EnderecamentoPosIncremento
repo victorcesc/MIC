@@ -10,7 +10,7 @@ start:
     ldi r17, 0
 L1:
     inc r17
-    st X+, r17 // X = conteudo da pos de memoria (r27r26)0011
+    st X+, r17 //Pos incremento, ele incrementa o ponteiro apos colocar o conteudo
     cpi r17, 10 //compara o registrador com um imediato(10)
     brne L1
     
