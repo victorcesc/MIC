@@ -1,0 +1,69 @@
+;----------------------------------------------------------------------------------------
+; Aula Microcontroladores
+; Autor: Roberto de Matos
+; Exemplo Int0
+; OBS.: Ã‰ preciso debounce em hardware para o programa funcionar corretamente
+;----------------------------------------------------------------------------------------
+  
+.INCLUDE "/opt/microchip/xc8/v2.05/dfp/avrasm/inc/m328pdef.inc"
+
+;DEFINIÃ‡Ã•ES
+.equ LED   = PB5	        
+.equ BOTAO = PD3	        
+.def AUX   = R16	        
+			                
+
+;----------------------------------------------------------------------------------------
+.ORG 0x000          ; Reset vector
+  RJMP Init       
+
+.ORG 0x004 			; Vetor (endereÃ§o na Flash) de InterrupÃ§Ã£o da INT0
+  RJMP isr_int0     
+  
+Init:
+  SBI DDRB, LED     ; Configura PB0 (LED) como saÃ­da
+  SBI PORTB, LED    ; Apaga o LED
+    
+  
+  CBI DDRD, BOTAO   ; Configurao PD2 (Botao - INT0) como entrada
+  SBI PORTD, BOTAO  ; Ativa Pull-up
+
+  LDI AUX, 0x00     ; 
+  STS EICRA, AUX    ; configura INT0 sensÃ­vel a borda de descida
+  SBI EIMSK, INT1   ; habilita a INT0
+  
+  SEI               ; habilita a interrupÃ§Ã£o global (bit I do SREG)
+
+Loop:
+  rjmp Loop
+
+  
+  
+delay:
+    dec r5
+    brne delay
+    dec r6
+    brne delay
+    dec r20
+    brne delay
+    ret
+;----------------------------------------------------------------------------------------
+; Rotina de InterrupÃ§Ã£o (ISR) da INT0
+;----------------------------------------------------------------------------------------
+isr_int0:
+  push R16		   ; Salva o contexto (SREG)
+  in R16, SREG
+  push R16
+
+  
+  ldi r20,0x50
+  rcall delay
+  SBI PINB, LED    ; usa a funcao toggle do GPIO
+  rcall delay
+  cbi PINB,LED
+  
+  pop R16		   ; Restaura o contexto (SREG)
+  out SREG, R16
+  pop R16
+  
+  RETI
